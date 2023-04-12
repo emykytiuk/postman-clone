@@ -1,6 +1,7 @@
 import "bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import prettyBytes from "pretty-bytes";
+import setupEditors from "./setupEditors";
 
 import axios from "axios";
 const form = document.querySelector("[data-form]");
@@ -93,13 +94,24 @@ function updateResponseHeaders(headers) {
   });
 }
 
+const { requestEditor, updateResponseEditor } = setupEditors();
 form.addEventListener("submit", (e) => {
   e.preventDefault();
+
+  let data;
+
+  try {
+    data = JSON.parse(requestEditor.state.doc.toString() || null);
+  } catch (e) {
+    alert("JSON Data is malformed");
+  }
+
   axios({
     url: document.querySelector("[data-url]").value,
     method: document.querySelector("[data-method]").value,
     params: keyValuePairsToObjects(queryParamsContainer),
     headers: keyValuePairsToObjects(requestHeadersContainer),
+    data,
   })
     .catch((e) => e)
     .then((response) => {
@@ -108,7 +120,7 @@ form.addEventListener("submit", (e) => {
         .classList.remove("d-none");
 
       updateResponseDetails(response);
-      // updateResponseEditor(response.data);
+      updateResponseEditor(response.data);
       updateResponseHeaders(response.headers);
     });
 });
