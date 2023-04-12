@@ -1,6 +1,9 @@
 import "bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 
+import axios from "axios";
+const form = document.querySelector("[data-form]");
+
 /* Functionality for repeating sections with key/value pairs */
 const queryParamsContainer = document.querySelector("[data-query-params]");
 const requestHeadersContainer = document.querySelector(
@@ -32,4 +35,30 @@ function createKeyValuePair() {
 
   return element;
 }
-/* -------------------------------- */
+
+/* Sending requests */
+
+function keyValuePairsToObjects(container) {
+  const pairs = container.querySelectorAll("[data-key-value-pair]");
+
+  return [...pairs].reduce((data, pair) => {
+    const key = pair.querySelector("[data-key]").value;
+    const value = pair.querySelector("[data-value]").value;
+
+    if (key === "") return data;
+
+    return { ...data, [key]: value };
+  }, {});
+}
+
+form.addEventListener("submit", (e) => {
+  e.preventDefault();
+  axios({
+    url: document.querySelector("[data-url]").value,
+    method: document.querySelector("[data-method]").value,
+    params: keyValuePairsToObjects(queryParamsContainer),
+    headers: keyValuePairsToObjects(requestHeadersContainer),
+  }).then((response) => {
+    console.log(response);
+  });
+});
